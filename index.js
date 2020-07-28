@@ -24,6 +24,9 @@ exports.handler = async (event) => {
         console.log(err);
     }
     const response = {
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+        },
         statusCode: 200,
         body: JSON.stringify('Hello from Lambda!'),
     };
