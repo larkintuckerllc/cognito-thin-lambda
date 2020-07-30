@@ -5,6 +5,7 @@ AWS.config.update({region: 'us-east-1'});
 const dynamodb = new AWS.DynamoDB();
 
 exports.handler = async (event) => {
+    console.log(requestContext.authorizer.claims); // TODO REMOVE
     const { sub } = event.requestContext.authorizer.claims;
     const id = v4();
     const params = {
