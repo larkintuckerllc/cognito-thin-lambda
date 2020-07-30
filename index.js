@@ -5,32 +5,49 @@ AWS.config.update({region: 'us-east-1'});
 const dynamodb = new AWS.DynamoDB();
 
 exports.handler = async (event) => {
-    console.log(requestContext.authorizer.claims); // TODO REMOVE
     const { sub } = event.requestContext.authorizer.claims;
+    const groups = event.requestContext.authorizer.claims['cognito:groups'];
+    if (groups === undefined) {
+        return {
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+            },
+            statusCode: 500,
+            body: JSON.stringify('Unexpected Error'),
+        };
+    }
     const id = v4();
     const params = {
         Item: {
-            Sub: {
-                S: sub,
+            Group: {
+                S: groups[0], // USE FIRST GROUP
             }, 
             Id: {
                 S: id,
+            },
+            Sub: {
+                S: sub,
             },
         }, 
         TableName: "Example",
     };
     try {
-        const data = await dynamodb.putItem(params).promise();
+        await dynamodb.putItem(params).promise();
+        return {
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+            },
+            statusCode: 200,
+            body: JSON.stringify('Success'),
+        };
     } catch (err) {
         console.log(err);
+        return {
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+            },
+            statusCode: 500,
+            body: JSON.stringify('Unexpected Error'),
+        };
     }
-    const response = {
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-        },
-        statusCode: 200,
-        body: JSON.stringify('Hello from Lambda!'),
-    };
-    return response;
 };
-
